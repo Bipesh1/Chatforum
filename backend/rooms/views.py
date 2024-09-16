@@ -17,11 +17,7 @@ def getavailablerooms(request):
         return JsonResponse({"status":"error","message":"No rooms available"})
     return JsonResponse({"status":"successful",'rooms':serializer.data})
 
-from rest_framework.decorators import api_view
-from django.http import JsonResponse
-from .models import Room, Thread
-from .serializers import ThreadSerializer
-from django.core.exceptions import ObjectDoesNotExist
+
 
 @api_view(['GET'])
 def getthreads(request, room_name):

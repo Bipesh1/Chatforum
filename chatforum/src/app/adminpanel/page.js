@@ -95,7 +95,7 @@ export default function AdminPanel() {
                                 <h3 className="text-2xl md:text-3xl font-bold">View Rooms</h3>
                             </div>
                             <div
-                                onClick={() => router.push("/users")}
+                                onClick={() => router.push("/userstats")}
                                 className="cursor-pointer bg-gradient-to-r from-blue-500 to-indigo-500 p-6 rounded-2xl shadow-lg text-center text-white hover:shadow-xl transition-all"
                             >
                                 <h3 className="text-2xl md:text-3xl font-bold">View Users</h3>

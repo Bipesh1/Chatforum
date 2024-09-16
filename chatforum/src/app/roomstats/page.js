@@ -132,6 +132,7 @@ export default function RoomStats() {
                                 <th className="px-4 py-2 text-left text-gray-800">Room ID</th>
                                 <th className="px-4 py-2 text-left text-gray-800">Room Name</th>
                                 <th className="px-4 py-2 text-left text-gray-800">Created At</th>
+                                <th className="px-4 py-2 text-left text-gray-800">Total Users</th>
                                 <th className="px-4 py-2 text-left text-gray-800">Actions</th>
                             </tr>
                         </thead>
@@ -144,6 +145,7 @@ export default function RoomStats() {
                                     <td className="border px-4 py-2">{room.id}</td>
                                     <td className="border px-4 py-2">{room.name}</td>
                                     <td className="border px-4 py-2">{room.created_at}</td>
+                                    <td className="border px-4 py-2">{room.user_count}</td>
                                     <td className="border px-4 py-2 flex flex-row gap-2">
                                         <div className="min-h-full flex space-x-4 justify-center items-center">
                                             <button className="text-blue-500 hover:text-blue-700 inline-block w-4 h-6" onClick={() => enterRoom(room.name)}>

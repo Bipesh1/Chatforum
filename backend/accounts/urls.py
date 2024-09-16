@@ -6,4 +6,6 @@ urlpatterns = [
     path('signin/',views.signin,name='signin'),
     path('uploadprofilepicture/',views.uploadprofilepicture,name='uploadprofilepicture'),
     path('getprofiledata/',views.get_user_profile,name="getprofiledata"),
+    path('getusers/',views.getusers,name="getusers"),
+    path('deleteusers/',views.deleteusers,name="deleteusers"),
 ]

@@ -62,7 +62,7 @@ export default function page({ params }) {
         } finally {
             setIsLoading(false)
         }
-    }
+    };
 
 
     return (

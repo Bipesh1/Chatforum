@@ -7,6 +7,7 @@ from django.contrib.auth import authenticate
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
+from django.core.exceptions import ObjectDoesNotExist
 
 
 
@@ -92,3 +93,26 @@ def get_user_profile(request):
         "profile":profile_serializer.data
     }
     return JsonResponse(data)
+
+@api_view(['GET'])
+def getusers(request):
+    try:
+        users = User.objects.all()
+        if(not users):
+            return JsonResponse({'status':'error','message':'User doesnt exist'})
+        serializer = UserSerializer(users,many=True)
+        return JsonResponse({'status':'successful','users':serializer.data})
+    except ObjectDoesNotExist: 
+        return JsonResponse({"status": "error", "message": "Failed"}, status=404)
+    
+
+@api_view(['POST'])
+def deleteusers(request):
+    try:
+        userid = request.data.get('userid')
+        print(userid)
+        deletinguser = User.objects.get(id=userid)
+        deletinguser.delete()
+        return JsonResponse({'status':'successful','message':'User Deleted Successfully'})
+    except ObjectDoesNotExist:
+        return JsonResponse({"status": "error", "message": "User not found"}, status=404)

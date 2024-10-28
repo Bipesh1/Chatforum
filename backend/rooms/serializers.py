@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Room,Thread
+from .models import Room,Thread,Message
 from accounts.serializers import UserSerializer
 
 class RoomSerializer(serializers.ModelSerializer):
@@ -13,7 +13,24 @@ class RoomSerializer(serializers.ModelSerializer):
         return obj.users.count()
 
 class ThreadSerializer(serializers.ModelSerializer):
+    created_by= UserSerializer(read_only=True)
     room= RoomSerializer(read_only=True)
     class Meta:
         model= Thread
         fields=['id','room','title','created_by','created_at']
+
+class MessageSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    image = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Message
+        fields = ['id', 'room', 'thread', 'user', 'content', 'image', 'date_added']
+
+    def get_image(self, obj):
+        request = self.context.get('request')
+        if obj.image:
+            # Build the absolute URL using request.build_absolute_uri()
+            return request.build_absolute_uri(obj.image.url)
+        return None
+

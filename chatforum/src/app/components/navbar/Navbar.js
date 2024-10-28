@@ -31,7 +31,7 @@ export default function Navbar({ handlelogout }) {
           <li>
             <Link
               className="flex items-center text-base md:text-lg font-semibold hover:text-indigo-300 transition"
-              href={"/JoinedThreads"}
+              href={"/joinedthreads"}
             >
               <FaUsers className="mr-3" /> Joined Threads
             </Link>

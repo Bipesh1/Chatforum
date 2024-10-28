@@ -22,3 +22,14 @@ class Thread(models.Model):
 
     def __str__(self):
         return self.title
+
+class Message(models.Model):
+    room= models.ForeignKey(Room, related_name='messages',on_delete=models.CASCADE)
+    thread= models.ForeignKey(Thread, related_name='messages',on_delete=models.CASCADE)
+    user= models.ForeignKey(User,related_name='messages',on_delete=models.CASCADE)
+    content= models.TextField(blank=True,null=True)
+    image= models.ImageField(upload_to='image_messages/',blank=True, null=True)
+    date_added= models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.user.username}: {self.content or "Image"}'

@@ -86,6 +86,8 @@ export default function RoomPage({ params }) {
               title={thread.title}
               description={thread.description}
               roomname={params.name}
+              created_by={thread.created_by['username']}
+              basepath={"/rooms"}
             />
           ))}
         </div>

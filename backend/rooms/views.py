@@ -1,10 +1,11 @@
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
-from .models import Room,Thread
+from .models import Room,Thread,Message
 from django.http import JsonResponse
-from .serializers import RoomSerializer,ThreadSerializer
+from .serializers import RoomSerializer,ThreadSerializer,MessageSerializer
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.paginator import Paginator
 import json
 
 @api_view(['GET'])
@@ -86,3 +87,29 @@ def addrooms(request):
     return JsonResponse({"status":"error","message":"cant add room"})
        
        
+@api_view(['GET'])
+def getMessages(request, threadid):
+    thread = Thread.objects.get(id=threadid)
+    messages = Message.objects.filter(thread=thread).order_by('-date_added')
+    page_number = request.GET.get('page', 1)
+    paginator = Paginator(messages, 7)
+    page_obj = paginator.get_page(page_number)
+    
+    # Pass the request as context to the serializer
+    serializer = MessageSerializer(page_obj, many=True, context={'request': request})
+    print(serializer.data)  # Check if the absolute URLs are generated correctly
+    
+    if not messages:
+        return JsonResponse({"message": "No message", "status": "error"})
+    
+    return JsonResponse({"status": "successful", "message": serializer.data})
+
+@api_view(['GET'])
+def getJoinedThreads(request):
+    user= request.user
+    threads= Thread.objects.filter(created_by=user)
+    if threads:
+        serializer= ThreadSerializer(threads, many=True)
+        return JsonResponse({"status":"sucessful", "data":serializer.data})
+    else:
+        return JsonResponse({"message":"No Threads","status":"error"})

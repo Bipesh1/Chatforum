@@ -39,7 +39,7 @@ export default function Page({ params }) {
   const sortedMessages = Array.isArray(messages) && messages.length > 0 ? messages.sort((a, b) => b.upvote - a.upvote) : [];
 
   return (
-    <div className="bg-gradient-to-r from-purple-500 to-indigo-600 min-h-screen flex flex-col justify-center items-center p-10">
+    <div className="bg-gradient-to-r from-gray-800 to-gray-900 min-h-screen flex flex-col justify-center items-center p-10">
       <div className="w-full max-w-5xl p-8 bg-white rounded-3xl shadow-2xl">
         <h1 className="text-5xl font-extrabold text-center text-gray-800 mb-12">
           Top Upvoted Messages
@@ -65,7 +65,7 @@ export default function Page({ params }) {
               >
            
                 <div className="flex justify-between items-center mb-4">
-                  <span className="text-2xl font-bold text-indigo-600">
+                  <span className="text-2xl font-bold text-gray-800">
                     {message.upvote} Upvotes
                   </span>
                   <div className="text-sm text-gray-500">{message.timestamp}</div>

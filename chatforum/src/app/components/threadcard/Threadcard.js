@@ -13,7 +13,7 @@ export default function ThreadCard({id,title,roomname,basepath,created_by,editOp
       <div className="flex items-center space-x-4">
         {/* Decorative Icon or Avatar */}
         <div className="flex-shrink-0">
-          <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full flex items-center justify-center text-white font-bold">
+          <div className="w-12 h-12 bg-gradient-to-r from-gray-800 to-gray-600 rounded-full flex items-center justify-center text-white font-bold">
             Q
           </div>
         </div>
@@ -25,13 +25,13 @@ export default function ThreadCard({id,title,roomname,basepath,created_by,editOp
         </div>
 
         {/* Action Button */}
-        <button className="text-sm font-medium text-indigo-600 hover:text-indigo-800 transition">
+        <button className="text-sm font-medium text-gray-600 hover:text-gray-800 transition">
           {editOption}
         </button>
-        <button className="text-sm font-medium text-indigo-600 hover:text-indigo-800 transition" onClick={()=>{deleteAction(roomname,id)}}>
+        <button className="text-sm font-medium text-gray-600 hover:text-gray-800 transition" onClick={()=>{deleteAction(roomname,id)}}>
           {deleteOption}
         </button>
-        <button className="text-sm font-medium text-indigo-600 hover:text-indigo-800 transition" onClick={joinChat}>
+        <button className="text-sm font-medium text-gray-600 hover:text-gray-800 transition" onClick={joinChat}>
           Join Chat
         </button>
       </div>

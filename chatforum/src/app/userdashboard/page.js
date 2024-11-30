@@ -87,7 +87,7 @@ export default function UserDashboard() {
                 <p className="text-gray-500">
                   Welcome back! Here’s your activity overview.
                 </p>
-                <button className="px-4 py-2 my-2 text-white rounded-lg shadow-md bg-indigo-600  hover:bg-indigo-700 transition">
+                <button className="px-4 py-2 my-2 text-white rounded-lg shadow-md bg-gray-600  hover:bg-gray-700 transition">
                   <Link href="/userprofile">
                     Edit Profile
                   </Link>
@@ -95,7 +95,7 @@ export default function UserDashboard() {
               </div>
             </div>
             <div className="mt-4 md:mt-0">
-              <button className="px-4 py-2 md:px-6 md:py-2 bg-indigo-600 text-white rounded-lg shadow-md hover:bg-indigo-700 transition flex items-center justify-between">
+              <button className="px-4 py-2 md:px-6 md:py-2 bg-gray-600 text-white rounded-lg shadow-md hover:bg-gray-700 transition flex items-center justify-between">
                 <IoIosNotifications className="text-xl" /> View Latest
                 Notifications
               </button>
@@ -103,15 +103,15 @@ export default function UserDashboard() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            <div className="bg-gradient-to-r from-purple-500 to-indigo-500 p-6 rounded-2xl shadow-lg text-center text-white">
+            <div className="bg-gradient-to-r from-gray-600 to-gray-800 p-6 rounded-2xl shadow-lg text-center text-white">
               <h3 className="text-3xl md:text-4xl font-bold">{joinedThreadsLength}</h3>
               <p className="mt-2 text-sm md:text-base">Threads Joined</p>
             </div>
-            <div className="bg-gradient-to-r from-blue-500 to-indigo-500 p-6 rounded-2xl shadow-lg text-center text-white">
+            <div className="bg-gradient-to-r from-gray-800 to-gray-600 p-6 rounded-2xl shadow-lg text-center text-white">
               <h3 className="text-3xl md:text-4xl font-bold">{joinedThreadsLength}</h3>
               <p className="mt-2 text-sm md:text-base">Contributions</p>
             </div>
-            <div className="bg-gradient-to-r from-pink-500 to-purple-500 p-6 rounded-2xl shadow-lg text-center text-white">
+            <div className="bg-gradient-to-r from-gray-600 to-gray-800 p-6 rounded-2xl shadow-lg text-center text-white">
               <h3 className="text-3xl md:text-4xl font-bold">N/A</h3>
               <p className="mt-2 text-sm md:text-base">Achievements</p>
             </div>

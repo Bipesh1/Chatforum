@@ -84,7 +84,7 @@ export default function RoomPage({ params }) {
         </h2>
         <Link href="#" passHref>
           <span
-            className="text-blue-500 hover:text-blue-700 cursor-pointer"
+            className="text-gray-700 hover:text-gray-800 cursor-pointer"
             onClick={() => setIsPopupOpen(true)}
           >
             Add New Thread
@@ -94,7 +94,7 @@ export default function RoomPage({ params }) {
         <div className="bg-white w-1/2 flex justify-center items-center p-2 rounded-md gap-x-3 shadow-gray-500 shadow-sm">
           <IoSearchSharp className=" text-xl" />
           <input name="query" type="search" className="outline-none w-full" placeholder="Search Related Threads" onChange={(e)=>setThreadQuery({[e.target.name]:e.target.value})}/>
-          <button className=" text-purple-600" onClick={handleSubmitThreadQueries}>Search</button>
+          <button className=" text-gray-600" onClick={handleSubmitThreadQueries}>Search</button>
         </div>
         </div>
 

@@ -66,10 +66,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-900 to-purple-900 overflow-hidden">
+    <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900 overflow-hidden py-10">
       {/* Background Oval Design */}
-      <div className="absolute -bottom-20 -left-40 w-[500px] h-[500px] bg-gradient-to-r from-purple-700 to-blue-700 rounded-full opacity-30 transform rotate-45 "></div>
-      <div className="absolute -top-40 -right-20 w-[700px] h-[700px] bg-gradient-to-r from-blue-700 to-purple-700 rounded-full opacity-30 transform rotate-45 "></div>
+      <div className="absolute -bottom-20 -left-40 w-[500px] h-[500px] bg-gradient-to-br from-gray-700 to-gray-600 rounded-full opacity-30 transform rotate-45 z-0"></div>
+      <div className="absolute -top-40 -right-20 w-[700px] h-[700px] bg-gradient-to-br from-gray-600 to-gray-700 rounded-full opacity-30 transform rotate-45 z-0"></div>
 
       {/* Login Form */}
       <div className="relative z-10 bg-white p-10 rounded-lg shadow-lg w-full max-w-lg transform hover:scale-105 transition-transform duration-300 ease-in-out">
@@ -81,7 +81,7 @@ export default function LoginPage() {
             className=" w-20 h-20"
           />
         </div>
-        <h2 className="text-4xl font-extrabold mb-2 text-center text-purple-700">
+        <h2 className="text-4xl font-extrabold mb-2 text-center text-gray-700">
           Welcome Back to ChatForum!
         </h2>
         <p className="text-center text-gray-500 mb-8">
@@ -116,14 +116,14 @@ export default function LoginPage() {
           </div>
           <button
             type="submit"
-            className="w-full bg-purple-700 text-white p-3 rounded-lg shadow-md hover:bg-purple-800 transition-colors duration-300"
+            className="w-full bg-gray-700 text-white p-3 rounded-lg shadow-md hover:bg-purple-800 transition-colors duration-300"
           >
             Log In
           </button>
           <ToastContainer />
           <div className="mt-6 text-center text-gray-600">
             Don't have an account?{" "}
-            <Link href="/" className="text-purple-700 hover:underline">
+            <Link href="/" className="text-gray-700 hover:underline">
               Sign Up
             </Link>
           </div>

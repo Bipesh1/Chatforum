@@ -344,19 +344,19 @@ export default function ChatRoom({ params }) {
       {/* Chat Header */}
       <div className="bg-white p-6 shadow-md flex justify-between items-center">
         <h2 className="text-xl font-bold">{roomname}</h2>
-        <Link href={`/upvote/${params.id}`} className="border border-purple-700 px-5 py-3 rounded-xl uppercase text-purple-800 font-semibold ">See the most upvoted messages</Link>
+        <Link href={`/upvote/${params.id}`} className="border border-gray-700 px-5 py-2 rounded-md uppercase text-gray-800 font-semibold ">See the most upvoted messages</Link>
 
         {/* Right-aligned buttons */}
         <div className="flex space-x-4">
 
           {/* Back to Threadroom */}
           {hasNext &&
-          <button className="text-blue-600 hover:text-blue-700 font-semibold border border-blue-600 px-4 py-2 rounded" onClick={getMessages}>
+          <button className="text-gray-800 hover:text-gray-700 font-semibold border border-gray-600 px-4 py-2 rounded" onClick={getMessages}>
            See more messages
           </button>
           }
           {/* Back to Threadroom */}
-          <Link href={`/rooms/${roomname}`} className="text-blue-600 hover:text-blue-700 font-semibold border border-blue-600 px-4 py-2 rounded">
+          <Link href={`/rooms/${roomname}`} className="text-gray-600 hover:text-gray-700 font-semibold border border-gray-600 px-4 py-2 rounded">
             Back to Threadroom
           </Link>
           {/* Leave Chat */}
@@ -421,7 +421,7 @@ export default function ChatRoom({ params }) {
                 ) : (
                   // When not in edit mode, show the message content
                   <div
-                    className={`p-6 rounded-lg max-w-2xl break-words shadow-xl transition-transform duration-300 ${message.isUser ? "bg-indigo-600 text-white" : "bg-gray-100 text-gray-800"
+                    className={`p-6 rounded-lg max-w-2xl break-words shadow-xl transition-transform duration-300 ${message.isUser ? "bg-gray-800 text-white" : "bg-gray-100 text-gray-800"
                       }`}
                   >
                     <p className="font-semibold text-sm ">{message.sender ? message.sender : message.user.username}</p>

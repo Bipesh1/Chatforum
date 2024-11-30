@@ -5,9 +5,11 @@ import getcsrftoken from "@/helpers/getcsrftoken";
 import { IoIosNotifications } from "react-icons/io";
 import { useRouter } from "next/navigation";
 import Layout from "../components/layout/Layout";
+import Link from "next/link";
 
 export default function UserDashboard() {
   const router = useRouter();
+  let createdThreads=[]
   const [joinedThreadsLength, setJoinedThreadsLength] = useState(null)
   // const [createdThreads, setCreatedThreads]= useState([])
   const [recentThreads,setRecentThreads]= useState([])
@@ -17,7 +19,8 @@ export default function UserDashboard() {
   useEffect(() => {
     getUserProfile();
     getJoinedThreads();
-   
+    
+
   }, []);
 
   const getUserProfile = async () => {
@@ -31,7 +34,9 @@ export default function UserDashboard() {
         withCredentials: true,
       }
     );
+    if(response.data.profile && response.data.profile.profile_picture_url){
     setProfileUrl(response.data.profile.profile_picture_url);
+    }
     setProfileDetails(response.data.user);
   };
   const getJoinedThreads = async () => {
@@ -42,10 +47,11 @@ export default function UserDashboard() {
       },
       withCredentials: true,
     })
-    console.log(response)
-    // setCreatedThreads(response.data.data)
+    createdThreads= response.data.data 
+
     if (response.data && response.data.data && Array.isArray(response.data.data)) {
       setJoinedThreadsLength(response.data.data.length);
+      filterthreads(createdThreads);
     } else {
       setJoinedThreadsLength(0);  // Set to 0 or another appropriate default value
     }
@@ -70,7 +76,7 @@ export default function UserDashboard() {
           <div className="flex flex-col md:flex-row items-center justify-between bg-white p-6 md:p-8 rounded-3xl shadow-md mb-8">
             <div className="flex items-center space-x-4 md:space-x-6">
               <img
-                src={profileUrl}
+                src={profileUrl?profileUrl:"/noprofileimage/npc.png"}
                 className="rounded-full shadow-gray-600 shadow-lg w-20 h-20 sm:w-32 sm:h-32 md:w-40 md:h-40"
                 alt="Profile"
               />
@@ -81,6 +87,11 @@ export default function UserDashboard() {
                 <p className="text-gray-500">
                   Welcome back! Here’s your activity overview.
                 </p>
+                <button className="px-4 py-2 my-2 text-white rounded-lg shadow-md bg-indigo-600  hover:bg-indigo-700 transition">
+                  <Link href="/userprofile">
+                    Edit Profile
+                  </Link>
+                </button>
               </div>
             </div>
             <div className="mt-4 md:mt-0">

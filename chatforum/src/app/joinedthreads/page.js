@@ -46,9 +46,9 @@ export default function JoinedThreads() {
 
   return (
     <Layout>
-      <div className="container mx-auto mt-8">
+      <div className="container mx-auto mt-8 px-5">
         <h1 className="text-3xl font-bold mb-4">GoLang Threads</h1>       
-        {joinedThreads.length > 0 ? (
+        {(joinedThreads && joinedThreads.length > 0) ? (
           <div className="space-y-4">
             {joinedThreads.map((thread) => (
               <ThreadCard
@@ -66,7 +66,7 @@ export default function JoinedThreads() {
             ))}
           </div>
         ) : (
-          <p>No threads joined yet.</p>
+          <p>No threads created yet.</p>
         )}
       </div>
     </Layout>

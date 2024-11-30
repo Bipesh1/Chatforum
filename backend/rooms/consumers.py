@@ -56,36 +56,58 @@ class ChatConsumer(AsyncWebsocketConsumer):
             roomname = text_data_json['roomname']
 
             # Handle text messages
-            if message_type == 'text':
+            if message_type == 'newtext':
                 message_content = text_data_json.get('content', "")
                 print(message_content)
                 # Save the text message to the database
-                await self.save_message(sender, message_content, roomname)
-
+                message_id,date_added=await self.save_message(sender, message_content, roomname)
+                
                 # Broadcast the message to the room
                 await self.channel_layer.group_send(
                     self.room_group_name,
                     {
                         'type': 'chat_message',
+                        'message_id':message_id,
                         'content': message_content,
                         'sender': sender,
-                        'message_type': 'text'
+                        'message_type': 'text',
+                        'date_added': date_added.isoformat(),
                     }
                 )
+            elif message_type=='edited':
+                message_id = text_data_json.get('messageID')  
+                updated_content = text_data_json.get('editedContent')
+                sender= text_data_json['sender'] 
+                
+                await self.update_message_content(message_id, updated_content)
 
+                # updated_message = await self.get_message_by_id(message_id)
+
+                # Broadcast only the updated message
+                await self.channel_layer.group_send(
+                    self.room_group_name,
+                    {
+                        'type': 'updated_message',  
+                        'content': updated_content,
+                        'sender': sender,
+                        'action': 'edited',     
+                        'message_id': message_id,
+                    }
+                )
             # Handle image messages
             elif message_type == 'images':
                 images = text_data_json.get('images', [])
                 image_urls=[]
                 # Save the image(s) to the database
                 for image_data in images:
-                    image_url=await self.save_image_message(sender, image_data, roomname)
+                    message_id,image_url=await self.save_image_message(sender, image_data, roomname)
                     image_urls.append(image_url)
                 # Broadcast image(s) to the room
                 await self.channel_layer.group_send(
                     self.room_group_name,
                     {
                         'type': 'chat_message',
+                        'message_id':message_id,
                         'sender': sender,
                         'message_type': 'image',
                         'images': image_urls
@@ -97,18 +119,37 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def chat_message(self, event):
         sender = event['sender']
+        message_id=event['message_id']
         content = event.get('content',None)
         message_type = event['message_type']
         images = event.get('images', [])
+        date_added=event.get('date_added')
         print(images)
         # Send message to WebSocket
         await self.send(text_data=json.dumps({
+            'message_id':message_id,
             'content': content,
             'sender': sender,
             'message_type': message_type,
-            'images': images
+            'images': images,
+            'date_added':date_added,
         }))
+    async def updated_message(self,event):
+        sender= event['sender']
+        content= event['content']
+        action = event['action']
+        message_id = event['message_id']
+        
+        
+        print(content)
 
+        await self.send(text_data=json.dumps({
+            
+            'message_id': message_id,
+            'content':content,
+            'sender':sender,
+            'action': action,
+        }))
     async def typing_notification(self, event):
         message = event['message']
         whoIsTyping = event['whoIsTyping']
@@ -126,8 +167,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         user = User.objects.get(username=sender)
         room = Room.objects.get(name=roomname)
         thread = Thread.objects.get(id=self.room_name)
-        Message.objects.create(room=room, user=user, thread=thread, content=message)
-   
+        message_obj=Message.objects.create(room=room, user=user, thread=thread, content=message)
+        return message_obj.id,message_obj.date_added
     @sync_to_async
     def save_image_message(self, sender, image_data, roomname):
         # Decode the base64 image data
@@ -141,18 +182,25 @@ class ChatConsumer(AsyncWebsocketConsumer):
         thread = Thread.objects.get(id=self.room_name)
         
         # Create the message and save the image
-        message = Message.objects.create(room=room, user=user, thread=thread, image=img_data)
+        message_obj = Message.objects.create(room=room, user=user, thread=thread, image=img_data)
         
         # Get the domain from settings or use a default value (localhost in this case)
         domain = getattr(settings, 'DOMAIN', 'http://localhost:8000')
         
         # Construct the absolute URL by ensuring no double slashes
-        image_absolute_url = f"{domain.rstrip('/')}/{message.image.url.lstrip('/')}"
+        image_absolute_url = f"{domain.rstrip('/')}/{message_obj.image.url.lstrip('/')}"
         
         # Overwrite the image field with the absolute URL
 
-        return image_absolute_url  # Return the absolute URL if needed
+        return message_obj.id,image_absolute_url  # Return the absolute URL if needed
 
 
 
+    @sync_to_async
+    def update_message_content(self, message_id, updated_content):
+       message = Message.objects.filter(id = message_id)
+       updatedmessage = message.update(content=updated_content)
+
+       print("Message updated")
+       return updatedmessage
     

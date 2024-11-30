@@ -123,7 +123,7 @@ export default function ProfilePictureUpload() {
             </button>
           </form>
           <div className="mt-6 text-center text-gray-600">
-            <Link href="/dashboard" className="text-purple-700 hover:underline">
+            <Link href="/userdashboard" className="text-purple-700 hover:underline">
               Skip for now
             </Link>
           </div>

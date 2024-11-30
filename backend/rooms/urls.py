@@ -10,5 +10,9 @@ urlpatterns = [
     path('<str:room_name>/joinroom/',views.joinroom,name='joinroom'),
     path('<str:room_name>/addthread/',views.addthreads,name='addthreads'),
     path('getMessages/<int:threadid>/',views.getMessages,name='getMessages'),
-    path('getJoinedThreads/',views.getJoinedThreads,name='getJoinedThreas')
+    path('getJoinedThreads/',views.getJoinedThreads,name='getJoinedThreas'),
+    path('handleUpVote/<int:messageid>/',views.handleUpVote,name='handleUpVote'),
+    path('handleDownVote/<int:messageid>/',views.handleDownVote,name='handleDownVote'),
+    path('getrelatedthreads/<str:room_name>/',views.getrelatedthreads,name="getrelatedthreads")
+    
 ]   

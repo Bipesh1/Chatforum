@@ -32,11 +32,18 @@ export default function LoginPage() {
       console.log(response);
       if (
         response.data.status == "successful" &&
-        response.data.hasUserProfilePicture == true
+        response.data.isSuperUser==true
+        
       ) {
+        router.push("/adminpanel");
+        console.log("adminpanel")
+      } else if (response.data.status == "successful" && response.data.hasUserProfilePicture == true) {
         router.push("/userdashboard");
-      } else if (response.data.status == "successful") {
-        router.push("/uploadprofilepicture");
+        console.log("user with profile")
+      }
+      else if(response.data.status=="successful"){
+        router.push("/uploadprofilepicture")
+        console.log('user with no profile')
       } else if (response.data.status == "error") {
         toast.error("Email or Password don't match", {
           position: "top-right",

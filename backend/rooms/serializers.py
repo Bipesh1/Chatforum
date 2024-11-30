@@ -25,7 +25,7 @@ class MessageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Message
-        fields = ['id', 'room', 'thread', 'user', 'content', 'image', 'date_added']
+        fields = ['id', 'room', 'thread', 'user', 'content', 'image', 'date_added','upvote','upvoted_by','downvote','downvoted_by']
 
     def get_image(self, obj):
         request = self.context.get('request')

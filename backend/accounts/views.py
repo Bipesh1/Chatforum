@@ -41,23 +41,27 @@ def signin(request):
 
         user= authenticate(username=user.username,password=password)
         hasUserProfile= False
-        is_superuser = False
+        isSuperUser= False
         
         if user:
             if hasattr(user, 'userprofile'):
                 hasUserProfile = True
             login(request,user)  
             if user.is_superuser:
-                is_superuser=True
-            print(is_superuser)
+                  request.session['isAdmin'] = True
+                  isSuperUser= True
+            else:
+                request.session['isAdmin'] = False
             response_data = {
                 'status': 'successful',
                 'user': str(request.user.is_authenticated),
                 'message': 'Login Successful',
                 'hasUserProfilePicture': hasUserProfile,
-                'is_superuser': is_superuser
+                'isSuperUser': isSuperUser
             }
             response = JsonResponse(response_data)
+            if user.is_superuser:
+                 response.set_cookie('isAdmin', True, max_age=3600, httponly=True)
             print(f"Session key after login: {request.session.session_key}")
             print(f"Session data: {request.session.items()}")
             return response
@@ -84,9 +88,11 @@ def get_user_profile(request):
     user=request.user
     if not user.is_authenticated:
         return JsonResponse({"status":"error","message":"User not authenticated"})
-    
-    profile= UserProfile.objects.get(user=user)
     user_serializer=UserSerializer(user)
+    if(not UserProfile.objects.filter(user=user).exists()):
+        data={"user":user_serializer.data}
+        return JsonResponse(data)
+    profile= UserProfile.objects.get(user=user)
     profile_serializer = UserProfileSerializer(profile,context={'request': request})
     data={
         "user":user_serializer.data,
@@ -116,3 +122,69 @@ def deleteusers(request):
         return JsonResponse({'status':'successful','message':'User Deleted Successfully'})
     except ObjectDoesNotExist:
         return JsonResponse({"status": "error", "message": "User not found"}, status=404)
+
+
+@api_view(['POST'])
+def updateInfo(request):
+    user = request.user
+    newusername= request.data.get('username')
+    passworddata=request.data.get('data')
+    oldpassword= passworddata.oldpassword
+    newpassword=passworddata.newpassword
+    type= request.data.get('type')
+    print(newusername)
+    if not user.is_authenticated:
+        return JsonResponse({"status":"error","message":"User not authenticated"})
+    if type== username:
+        if User.objects.filter(username=newusername).exists():
+            return(JsonResponse({'status':'error','message':'Username Already Exists'}))
+        serializer= UserSerializer(user, data={"username":newusername},partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse({"status":"successful","message":"Username Update Successfully"})
+    from django.contrib.auth.models import User
+from django.contrib.auth.hashers import check_password
+from django.http import JsonResponse
+from rest_framework.decorators import api_view
+from rest_framework.parsers import JSONParser
+from .serializers import UserSerializer
+
+@api_view(['POST'])
+def updateInfo(request):
+    user = request.user
+    newusername = request.data.get('username')
+    passworddata = request.data.get('data', {})
+    oldpassword = passworddata.get('oldpassword')
+    newpassword = passworddata.get('newpassword')
+    type = request.data.get('type')
+
+    if not user.is_authenticated:
+        return JsonResponse({"status": "error", "message": "User not authenticated"})
+
+    # Update username
+    if type == "username":
+        if User.objects.filter(username=newusername).exists():
+            return JsonResponse({'status': 'error', 'message': 'Username already exists'})
+        serializer = UserSerializer(user, data={"username": newusername}, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse({"status": "successful", "message": "Username updated successfully"})
+        return JsonResponse({"status": "error", "message": "Invalid username data"})
+
+    # Update password
+    if type == "password":
+        print("hello")
+        if not oldpassword or not newpassword:
+            return JsonResponse({"status": "error", "message": "Both old and new passwords are required"})
+        
+        # Verify the old password
+        if not user.check_password(oldpassword):
+            return JsonResponse({"status": "error", "message": "Old password is incorrect"})
+        
+        # Update to the new password
+        user.set_password(newpassword)
+        user.save()
+        return JsonResponse({"status": "successful", "message": "Password updated successfully"})
+
+    return JsonResponse({"status": "error", "message": "Invalid type or no type provided"})
+

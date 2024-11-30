@@ -33,7 +33,7 @@ export default function Navbar({ handlelogout }) {
               className="flex items-center text-base md:text-lg font-semibold hover:text-indigo-300 transition"
               href={"/joinedthreads"}
             >
-              <FaUsers className="mr-3" /> Joined Threads
+              <FaUsers className="mr-3" /> Created Threads
             </Link>
           </li>
 

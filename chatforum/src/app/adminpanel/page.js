@@ -29,7 +29,9 @@ export default function AdminPanel() {
                 withCredentials: true,
             }
         );
-        setProfileUrl(response.data.profile.profile_picture_url);
+        if(response.data.profile && response.data.profile.profile_picture_url){
+            setProfileUrl(response.data.profile.profile_picture_url);
+        }
         setProfileDetails(response.data.user);
     };
 
@@ -41,7 +43,7 @@ export default function AdminPanel() {
                     <div className="flex flex-col md:flex-row items-center justify-between bg-white p-6 md:p-8 rounded-3xl shadow-md mb-8">
                         <div className="flex items-center space-x-4 md:space-x-6">
                             <img
-                                src={profileUrl}
+                                src={profileUrl?profileUrl:"/noprofileimage/npc.png"}
                                 className="rounded-full shadow-gray-600 shadow-lg w-20 h-20 sm:w-32 sm:h-32 md:w-40 md:h-40"
                                 alt="Profile"
                             />

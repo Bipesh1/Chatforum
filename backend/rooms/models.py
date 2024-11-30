@@ -30,6 +30,9 @@ class Message(models.Model):
     content= models.TextField(blank=True,null=True)
     image= models.ImageField(upload_to='image_messages/',blank=True, null=True)
     date_added= models.DateTimeField(auto_now_add=True)
-
+    upvote= models.IntegerField(default=0)
+    upvoted_by= models.ManyToManyField(User, related_name="upvotedmessages",blank=True)
+    downvote= models.IntegerField(default=0)
+    downvoted_by=models.ManyToManyField(User,related_name="downvotedmessages",blank=True)
     def __str__(self):
         return f'{self.user.username}: {self.content or "Image"}'

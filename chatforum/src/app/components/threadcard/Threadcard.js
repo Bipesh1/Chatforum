@@ -2,7 +2,7 @@
 import React from 'react';
 import { useRouter,usePathname } from 'next/navigation';
 
-export default function ThreadCard({id,title, description,roomname,basepath,created_by,editOption,deleteOption,deleteAction}) {
+export default function ThreadCard({id,title,roomname,basepath,created_by,editOption,deleteOption,deleteAction}) {
   const router= useRouter()
 
   const joinChat=()=>{

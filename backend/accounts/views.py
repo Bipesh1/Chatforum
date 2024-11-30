@@ -124,30 +124,7 @@ def deleteusers(request):
         return JsonResponse({"status": "error", "message": "User not found"}, status=404)
 
 
-@api_view(['POST'])
-def updateInfo(request):
-    user = request.user
-    newusername= request.data.get('username')
-    passworddata=request.data.get('data')
-    oldpassword= passworddata.oldpassword
-    newpassword=passworddata.newpassword
-    type= request.data.get('type')
-    print(newusername)
-    if not user.is_authenticated:
-        return JsonResponse({"status":"error","message":"User not authenticated"})
-    if type== username:
-        if User.objects.filter(username=newusername).exists():
-            return(JsonResponse({'status':'error','message':'Username Already Exists'}))
-        serializer= UserSerializer(user, data={"username":newusername},partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return JsonResponse({"status":"successful","message":"Username Update Successfully"})
-    from django.contrib.auth.models import User
-from django.contrib.auth.hashers import check_password
-from django.http import JsonResponse
-from rest_framework.decorators import api_view
-from rest_framework.parsers import JSONParser
-from .serializers import UserSerializer
+
 
 @api_view(['POST'])
 def updateInfo(request):

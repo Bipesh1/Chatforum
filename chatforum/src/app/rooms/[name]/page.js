@@ -105,7 +105,7 @@ export default function RoomPage({ params }) {
               id={thread.id}
               title={thread.title}
               roomname={params.name}
-              created_by={thread.created_by['username']}
+              created_by={thread.created_by['username']|| thread.created_by}
               basepath={"/rooms"}
             />
           ))}

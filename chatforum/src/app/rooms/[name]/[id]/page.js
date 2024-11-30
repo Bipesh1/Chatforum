@@ -93,17 +93,28 @@ export default function ChatRoom({ params }) {
       }
     }, 2000);
   };
-  const getMessages = async () => {
+  const getMessages = async (reload) => {
     const csrftoken = await getcsrftoken()
-    const messagesResponse = await axios.get(
+    let messagesResponse
+    if(reload){
+    messagesResponse = await axios.get(
+      `http://localhost:8000/api/getMessages/${threadId}/?page=${currentPageNumber-1}`,
+      {
+        headers: { "X-CSRFToken": csrftoken.value },
+        withCredentials: true,
+      }
+    );
+  }else{
+    messagesResponse = await axios.get(
       `http://localhost:8000/api/getMessages/${threadId}/?page=${currentPageNumber}`,
       {
         headers: { "X-CSRFToken": csrftoken.value },
         withCredentials: true,
       }
     );
-    console.log(messagesResponse.data);
     setCurrentPageNumber((prev)=>prev+1)
+  }
+    console.log(messagesResponse.data);
     
     setHasNext(messagesResponse.data.has_next)
     if (
@@ -114,15 +125,21 @@ export default function ChatRoom({ params }) {
         message.isUser = message.user.username === userref.current.username;
       });
       const reversedMessages = [...messagesResponse.data.message].reverse();
-      setMessages((prevMessages) => {
-        const newMessages = reversedMessages.filter(
-          (newMessage) =>
-            !prevMessages.some(
-              (prevMessage) => prevMessage.id === newMessage.id
-            )
-        );
-        return [...newMessages, ...prevMessages];
-      });
+      console.log(reversedMessages)
+      if(reload){
+        setMessages((prevMessages) => {
+          const oldMessages = prevMessages.filter(
+            (prevMessage) =>
+              !reversedMessages.some(
+                (newMessage) => newMessage.id === prevMessage.id 
+              )
+            );
+            return [...reversedMessages, oldMessages];
+          });
+        // setMessages(reversedMessages)
+        }else{
+        setMessages((prevMessages)=>[...reversedMessages,...prevMessages])
+        }
     }
 
   }
@@ -148,7 +165,7 @@ export default function ChatRoom({ params }) {
       userref.current = userProfile.data.user;
       console.log("User profile fetched");
 
-      getMessages()
+      getMessages(false)
       if (!socketRef.current) {
         console.log(`Setting up WebSocket for threadId: ${threadId}`);
         socketRef.current = new WebSocket(
@@ -257,7 +274,7 @@ export default function ChatRoom({ params }) {
     )
     console.log(response.data)
     if (response.data.status == "successful") {
-      getMessages()
+      getMessages(true)
     }
 
     else if (response.data.status == "error") {
@@ -282,7 +299,7 @@ export default function ChatRoom({ params }) {
     )
     console.log(response.data)
     if (response.data.status == "successful") {
-      getMessages()
+      getMessages(true)
     }
 
     else if (response.data.status == "error") {
@@ -351,7 +368,7 @@ export default function ChatRoom({ params }) {
 
           {/* Back to Threadroom */}
           {hasNext &&
-          <button className="text-gray-800 hover:text-gray-700 font-semibold border border-gray-600 px-4 py-2 rounded" onClick={getMessages}>
+          <button className="text-gray-800 hover:text-gray-700 font-semibold border border-gray-600 px-4 py-2 rounded" onClick={()=>{getMessages(false)}}>
            See more messages
           </button>
           }

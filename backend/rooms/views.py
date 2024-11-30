@@ -191,10 +191,10 @@ def getrelatedthreads(request, room_name):
     for token in tokens:
         related_words.update(find_similar_words(token, embeddings))
     room= Room.objects.get(name=room_name)
-    threads = Thread.objects.filter(room=room).values('title','id','created_by')
-    thread_data = [{'title': thread['title'],'id':thread['id'],'created_by':thread["created_by"]} for thread in threads]
+    threads = Thread.objects.filter(room=room).values('id','title','created_by__username')
+    thread_data = [{'title': thread['title'],'id':thread['id'],'created_by':thread["created_by__username"]} for thread in threads]
     matching_threads = search_threads_by_words(related_words, thread_data)
-
+    print(matching_threads)
     return JsonResponse({'matching_threads': matching_threads})
 
 def loadembeddings(filepath):
@@ -212,7 +212,7 @@ def tokenizequery(query):
 def cosine_similarity(vec1, vec2):
     return np.dot(vec1, vec2) / (norm(vec1) * norm(vec2))
 
-def find_similar_words(word, embeddings, top_n=5):
+def find_similar_words(word, embeddings, top_n=30):
     word_vector = embeddings.get(word)
     if word_vector is None:
         return []
@@ -223,12 +223,12 @@ def find_similar_words(word, embeddings, top_n=5):
         similar_words.append((vocab_word, similarity))
 
     # Sort by similarity and return the top N similar words
-    print(similar_words)
     similar_words.sort(key=lambda x: x[1], reverse=True)
     return [w for w, _ in similar_words[:top_n]]
 
 def search_threads_by_words(words, thread_data):
     # Find threads containing at least one of the related words
+    print(words)
     matching_threads = []
     for thread in thread_data:
         for word in words:

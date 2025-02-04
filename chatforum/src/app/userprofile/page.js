@@ -8,12 +8,16 @@ import getcsrftoken from '@/helpers/getcsrftoken';
 import axios from 'axios';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 export default function page() {
     const router= useRouter()
     const [profileUrl, setProfileUrl] = useState("");
     const [profileDetails, setProfileDetails] = useState({});
     const [newUsername, setNewUserName] = useState("")
     const [passwordData, setPasswordData]=useState({})
+    
     useEffect(() => {
         getUserProfile();
     }, []);
@@ -81,6 +85,14 @@ export default function page() {
                 // getUserProfile();
             } else {
                 console.error(response.data);
+                toast.error("Old password doesnt match", {
+                    position: "top-right",
+                    autoClose: 5000,
+                    hideProgressBar: true,
+                    closeOnClick: true,
+                    pauseOnHover: false,
+                    draggable: false,
+                  });
             }
         } catch (error) {
             console.error('Error updating password:', error);
@@ -176,7 +188,7 @@ export default function page() {
                                 <label className="block text-gray-800 text-lg font-semibold mb-2">Old Password</label>
                                 <input
                                     name='oldpassword'
-                                    type='text'
+                                    type='password'
                                     onChange={(e) => setPasswordData({...passwordData,[e.target.name]:e.target.value})}
                                     placeholder="Old Password"
                                     className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600"
@@ -185,7 +197,7 @@ export default function page() {
                                  <label className="block text-gray-800 text-lg font-semibold mb-2">New Password</label>
                                 <input
                                     name='newpassword'
-                                    type='text'
+                                    type='password'
                                     onChange={(e) => setPasswordData({...passwordData,[e.target.name]:e.target.value})}
                                     placeholder="New Password"
                                     className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600"
@@ -210,6 +222,7 @@ export default function page() {
                             </div>
                         </form>
                     </div>
+                    <ToastContainer/>
                 </div>
             )}
 

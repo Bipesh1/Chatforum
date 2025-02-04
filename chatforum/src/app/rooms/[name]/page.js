@@ -6,12 +6,14 @@ import axios from "axios";
 import getcsrftoken from "@/helpers/getcsrftoken";
 import Link from "next/link";
 import { IoSearchSharp } from "react-icons/io5";
+import { MagnifyingGlass } from 'react-loader-spinner'
 
 export default function RoomPage({ params }) {
   const [threads, setThreads] = useState([]);
   const [threadquery,setThreadQuery]=useState({
     query:""
   })
+  const [isLoading ,setIsLoading]=useState(false)
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [newThreadTitle, setNewThreadTitle] = useState("");
 
@@ -67,13 +69,22 @@ export default function RoomPage({ params }) {
     }
   };
   const handleSubmitThreadQueries=async()=>{
-    const csrftoken= await getcsrftoken()
-    const response= await axios.post(`http://localhost:8000/api/getrelatedthreads/${params.name}/`,threadquery,{
-      headers: { "X-CSRFToken": csrftoken.value },
-          withCredentials: true,
-    })
-    console.log(response.data.matching_threads)
-    setThreads(response.data.matching_threads)
+    try{
+      setThreads([])
+      setIsLoading(true)
+      const csrftoken= await getcsrftoken()
+      const response= await axios.post(`http://localhost:8000/api/getrelatedthreads/${params.name}/`,threadquery,{
+        headers: { "X-CSRFToken": csrftoken.value },
+            withCredentials: true,
+      })
+      console.log(response.data.matching_threads)
+      setThreads(response.data.matching_threads)
+    }catch(err){
+      console.log(err)
+    }finally{
+      setIsLoading(false)
+    }
+    
   }
 
   return (
@@ -97,6 +108,7 @@ export default function RoomPage({ params }) {
           <button className=" text-gray-600" onClick={handleSubmitThreadQueries}>Search</button>
         </div>
         </div>
+        {isLoading && <MagnifyingGlass/>}
 
         <div className="space-y-4 mt-10">
           {threads.map((thread) => (

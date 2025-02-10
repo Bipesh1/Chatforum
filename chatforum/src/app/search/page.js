@@ -30,9 +30,9 @@ export default function Room() {
                 headers: { "X-CSRFToken": csrftoken.value },
                 withCredentials: true,
             })
-            console.log(response.data.matching_threads)
+            console.log(response.data.threads)
             console.log(response.data)
-            setThreads(response.data.matching_threads)
+            setThreads(response.data.threads)
         } catch (err) {
             console.log(err)
         } finally {
@@ -72,6 +72,9 @@ export default function Room() {
                                 created_by={thread.created_by['username'] || thread.created_by}
                                 basepath={"/rooms"}
                             />
+                            <p className="text-sm text-gray-600 font-semibold">
+                                Similarity Score: {thread.similarity_score}
+                            </p>
                         </div>
                     ))}
                 </div>

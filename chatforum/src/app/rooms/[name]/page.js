@@ -77,8 +77,8 @@ export default function RoomPage({ params }) {
         headers: { "X-CSRFToken": csrftoken.value },
             withCredentials: true,
       })
-      console.log(response.data.matching_threads)
-      setThreads(response.data.matching_threads)
+      console.log(response.data.threads)
+      setThreads(response.data.threads)
     }catch(err){
       console.log(err)
     }finally{

@@ -46,9 +46,24 @@ export default function page() {
 
     const onSubmit = async (data) => {
         setIsSubmitting(true);
+        console.log("Submitted username:", data.username);
+console.log("Current username:", profileDetails.username);
         try {
+            if (data.username === profileDetails.username) {
+                toast.error("New username cannot be the same as the current username", {
+                    position: "top-right",
+                    autoClose: 5000,
+                    hideProgressBar: true,
+                    closeOnClick: true,
+                    pauseOnHover: false,
+                    draggable: false,
+                });
+                setIsSubmitting(false);
+                return;
+            }
+    
             const csrftoken = await getcsrftoken();
-
+    
             // Handle updating username
             if (data.username) {
                 const response = await axios.post("http://localhost:8000/api/updateInfo", {
@@ -58,15 +73,21 @@ export default function page() {
                     headers: { "X-CSRFToken": csrftoken.value },
                     withCredentials: true,
                 });
-
+    
                 if (response.data.status === 'successful') {
-                    console.log('Username Changed Successfully');
+                    toast.success("Username changed successfully", {
+                        position: "top-right",
+                        autoClose: 3000,
+                    });
                     getUserProfile();
                 } else {
-                    console.error(response.data.message);
+                    toast.error(response.data.message || "Failed to update username", {
+                        position: "top-right",
+                        autoClose: 5000,
+                    });
                 }
             }
-
+    
             // Handle updating password
             if (data.oldpassword && data.newpassword) {
                 const response = await axios.post("http://localhost:8000/api/updateInfo", {
@@ -76,32 +97,27 @@ export default function page() {
                     headers: { "X-CSRFToken": csrftoken.value },
                     withCredentials: true,
                 });
-
+    
                 if (response.data.status === 'successful') {
-                    await axios.get("/api/logout", {
-                        withCredentials: true,
-                    });
-                    console.log(response.data);
+                    await axios.get("/api/logout", { withCredentials: true });
                     router.push('/login');
                 } else {
-                    console.error(response.data);
                     toast.error("Old password doesn't match", {
                         position: "top-right",
                         autoClose: 5000,
-                        hideProgressBar: true,
-                        closeOnClick: true,
-                        pauseOnHover: false,
-                        draggable: false,
                     });
                 }
             }
         } catch (error) {
             console.error('Error updating user data:', error);
+            toast.error("An error occurred while updating the profile", {
+                position: "top-right",
+                autoClose: 5000,
+            });
         } finally {
             setIsSubmitting(false);
         }
     };
-
     const getUserProfile = async () => {
         const csrftoken = await getcsrftoken();
         const response = await axios.get(
@@ -246,6 +262,7 @@ export default function page() {
                                 </button>
                             </div>
                         </form>
+                         <ToastContainer />
                     </div>
                 </div>
             )}

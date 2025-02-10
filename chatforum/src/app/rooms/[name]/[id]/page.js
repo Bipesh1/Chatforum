@@ -134,7 +134,7 @@ export default function ChatRoom({ params }) {
                 (newMessage) => newMessage.id === prevMessage.id 
               )
             );
-            return [...reversedMessages, oldMessages];
+            return [...reversedMessages, ...oldMessages];
           });
         // setMessages(reversedMessages)
         }else{

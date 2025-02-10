@@ -10,15 +10,18 @@ import Link from "next/link";
 export default function UserDashboard() {
   const router = useRouter();
   let createdThreads=[]
-  const [joinedThreadsLength, setJoinedThreadsLength] = useState(null)
-  // const [createdThreads, setCreatedThreads]= useState([])
-  const [recentThreads,setRecentThreads]= useState([])
   const [profileUrl, setProfileUrl] = useState("");
   const [profileDetails, setProfileDetails] = useState({});
+  const [recentThreads, setRecentThreads] = useState([]);
+  const [joinedThreadsLength, setJoinedThreadsLength] = useState(null)
+  const [createdThreadsLength, setCreatedThreadsLength] = useState(null)
+  const [joinedRoomsLength, setJoinedRoomsLength] = useState(null)
 
   useEffect(() => {
     getUserProfile();
     getJoinedThreads();
+    getJoinedRooms();
+    getCreatedThreads();
     
 
   }, []);
@@ -57,6 +60,38 @@ export default function UserDashboard() {
     }
     
     // setRoomName(response.data.data.room.name)
+  }
+  const getJoinedRooms = async () => {
+    const csrftoken = await getcsrftoken();
+    const response = await axios.get("http://localhost:8000/api/getJoinedRooms/",
+      {
+        headers: {
+          "X-CSRFToken": csrftoken.value,
+        }, withCredentials: true,
+      }
+    )
+    if (response.data && response.data.data && Array.isArray(response.data.data)) {
+      setJoinedRoomsLength(response.data.data.length);
+    } else {
+      setJoinedThreadsLength(0)
+    }
+  }
+  const getCreatedThreads = async () => {
+    const csrftoken = await getcsrftoken();
+    const response = await axios.get("http://localhost:8000/api/getCreatedThreads/",
+      {
+        headers: {
+          "X-CSRFToken": csrftoken.value,
+        }, withCredentials: true,
+      }
+    )
+    createdThreads = response.data.data
+    if (response.data && response.data.data && Array.isArray(response.data.data)) {
+      setCreatedThreadsLength(response.data.data.length);
+      filterthreads(response.data.data)
+    } else {
+      setCreatedThreadsLength(0)
+    }
   }
 
   const filterthreads=(allThreads)=>{
@@ -101,19 +136,18 @@ export default function UserDashboard() {
               </button>
             </div>
           </div>
-
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            <div className="bg-gradient-to-r from-gray-600 to-gray-800 p-6 rounded-2xl shadow-lg text-center text-white">
+            <div className="bg-gradient-to-r from-purple-500 to-indigo-500 p-6 rounded-2xl shadow-lg text-center text-white">
               <h3 className="text-3xl md:text-4xl font-bold">{joinedThreadsLength}</h3>
               <p className="mt-2 text-sm md:text-base">Threads Joined</p>
             </div>
-            <div className="bg-gradient-to-r from-gray-800 to-gray-600 p-6 rounded-2xl shadow-lg text-center text-white">
-              <h3 className="text-3xl md:text-4xl font-bold">{joinedThreadsLength}</h3>
+            <div className="bg-gradient-to-r from-blue-500 to-indigo-500 p-6 rounded-2xl shadow-lg text-center text-white">
+              <h3 className="text-3xl md:text-4xl font-bold">{createdThreadsLength}</h3>
               <p className="mt-2 text-sm md:text-base">Contributions</p>
             </div>
-            <div className="bg-gradient-to-r from-gray-600 to-gray-800 p-6 rounded-2xl shadow-lg text-center text-white">
-              <h3 className="text-3xl md:text-4xl font-bold">N/A</h3>
-              <p className="mt-2 text-sm md:text-base">Achievements</p>
+            <div className="bg-gradient-to-r from-pink-500 to-purple-500 p-6 rounded-2xl shadow-lg text-center text-white">
+              <h3 className="text-3xl md:text-4xl font-bold">{joinedRoomsLength}</h3>
+              <p className="mt-2 text-sm md:text-base">Joined Rooms</p>
             </div>
           </div>
 
@@ -122,13 +156,31 @@ export default function UserDashboard() {
               Recent Activity
             </h2>
             <div className="bg-white p-4 md:p-6 rounded-2xl shadow-md">
-              {recentThreads.map((recentthread)=>(
-                <p className="text-gray-600 text-sm md:text-base">
-                You have created a thread in room {recentthread.room.name}.
-              </p>
-              ))}
+              {recentThreads.length > 0 ? (
+                <ul className="space-y-3">
+                  {recentThreads.map((recentthread, index) => (
+                    <li
+                      key={index}
+                      className="flex items-center bg-gray-50 border border-gray-200 rounded-lg p-3 md:p-4 hover:bg-gray-100 transition duration-200"
+                    >
+                      <span className="inline-block bg-blue-500 text-white text-xs font-semibold uppercase px-2 py-1 rounded-lg mr-3">
+                        {index + 1}
+                      </span>
+                      <p className="text-gray-700 text-sm md:text-base">
+                        <span className="font-medium text-gray-900">You</span> have created a thread in
+                        <Link href={`/rooms/${recentthread.room.name}`}>
+                          <span className="font-semibold text-blue-600"> {recentthread.room.name}</span>.
+                        </Link>
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-gray-500 text-sm md:text-base">No recent activity.</p>
+              )}
             </div>
           </div>
+
         </div>
       </div>
     </Layout>

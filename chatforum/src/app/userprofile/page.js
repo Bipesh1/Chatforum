@@ -1,108 +1,108 @@
 'use client'
-import React from 'react'
-import Navbar from '../components/navbar/Navbar'
-import Layout from '../components/layout/Layout'
+import React, { useState, useEffect } from 'react';
+import Navbar from '../components/navbar/Navbar';
+import Layout from '../components/layout/Layout';
 import { IoIosCreate } from 'react-icons/io';
-import { useState, useEffect } from 'react';
 import getcsrftoken from '@/helpers/getcsrftoken';
 import axios from 'axios';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+// Single Zod schema for both username and password validation
+const userProfileSchema = z.object({
+    username: z.string().min(5, "Username must be atleast 5 characters").max(100, "Username is too long"),
+    oldpassword: z.string().min(6, "Old password must be at least 6 characters").optional(),
+    newpassword: z.string().min(6, "New password must be at least 6 characters").optional(),
+});
 
 export default function page() {
-    const router= useRouter()
+    const router = useRouter();
     const [profileUrl, setProfileUrl] = useState("");
     const [profileDetails, setProfileDetails] = useState({});
-    const [newUsername, setNewUserName] = useState("")
-    const [passwordData, setPasswordData]=useState({})
-    
-    useEffect(() => {
-        getUserProfile();
-    }, []);
-
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [editPasswordPopup, setEditPasswordPopup] = useState(false);
     const [editUsernamePopup, setEditUsernamePopup] = useState(false);
 
+    const { register, handleSubmit, formState: { errors } } = useForm({
+        resolver: zodResolver(userProfileSchema), // Use the combined schema for validation
+    });
+
+    useEffect(() => {
+        getUserProfile();
+    }, []);
+
     const handleEditUsername = () => {
-        setEditUsernamePopup(true)
-    }
+        setEditUsernamePopup(true);
+    };
+
     const handleChangePassword = () => {
-        setEditPasswordPopup(true)
-    }
+        setEditPasswordPopup(true);
+    };
 
-    const handleSubmitUsername = async (e) => {
-        e.preventDefault()
-        setIsSubmitting(true); // Disable button
-        console.log(newUsername)
+    const onSubmit = async (data) => {
+        setIsSubmitting(true);
         try {
             const csrftoken = await getcsrftoken();
-            const response = await axios.post("http://localhost:8000/api/updateInfo", {
-                type: "username",
-                username: newUsername,
-            }, {
-                headers: { "X-CSRFToken": csrftoken.value },
-                withCredentials: true,
-            });
 
-            if (response.data.status === 'successful') {
-                console.log('Username Changed Successfully');
-                // Fetch updated profile
-                getUserProfile();
-            } else {
-                console.error(response.data.message);
-            }
-        } catch (error) {
-            console.error('Error updating username:', error);
-        } finally {
-            setIsSubmitting(false); // Re-enable button
-        }
-    }
-    const handleSubmitPassword = async (e) => {
-        e.preventDefault()
-        setIsSubmitting(true); // Disable button
-        try {
-            const csrftoken = await getcsrftoken();
-            const response = await axios.post("http://localhost:8000/api/updateInfo", {
-                type: "password",
-                data: passwordData,
-            }, {
-                headers: { "X-CSRFToken": csrftoken.value },
-                withCredentials: true,
-            });
-
-            if (response.data.status === 'successful') {
-                // Invalidate the session by logging out
-                await axios.get("/api/logout", {
+            // Handle updating username
+            if (data.username) {
+                const response = await axios.post("http://localhost:8000/api/updateInfo", {
+                    type: "username",
+                    username: data.username,
+                }, {
+                    headers: { "X-CSRFToken": csrftoken.value },
                     withCredentials: true,
                 });
-                console.log(response.data);
-                router.push('/login')
 
-                // Fetch updated profile
-                // getUserProfile();
-            } else {
-                console.error(response.data);
-                toast.error("Old password doesnt match", {
-                    position: "top-right",
-                    autoClose: 5000,
-                    hideProgressBar: true,
-                    closeOnClick: true,
-                    pauseOnHover: false,
-                    draggable: false,
-                  });
+                if (response.data.status === 'successful') {
+                    console.log('Username Changed Successfully');
+                    getUserProfile();
+                } else {
+                    console.error(response.data.message);
+                }
+            }
+
+            // Handle updating password
+            if (data.oldpassword && data.newpassword) {
+                const response = await axios.post("http://localhost:8000/api/updateInfo", {
+                    type: "password",
+                    data,
+                }, {
+                    headers: { "X-CSRFToken": csrftoken.value },
+                    withCredentials: true,
+                });
+
+                if (response.data.status === 'successful') {
+                    await axios.get("/api/logout", {
+                        withCredentials: true,
+                    });
+                    console.log(response.data);
+                    router.push('/login');
+                } else {
+                    console.error(response.data);
+                    toast.error("Old password doesn't match", {
+                        position: "top-right",
+                        autoClose: 5000,
+                        hideProgressBar: true,
+                        closeOnClick: true,
+                        pauseOnHover: false,
+                        draggable: false,
+                    });
+                }
             }
         } catch (error) {
-            console.error('Error updating password:', error);
+            console.error('Error updating user data:', error);
         } finally {
-            setIsSubmitting(false); // Re-enable button
+            setIsSubmitting(false);
         }
-    }
+    };
 
     const getUserProfile = async () => {
-        
         const csrftoken = await getcsrftoken();
         const response = await axios.get(
             "http://localhost:8000/api/getprofiledata/",
@@ -113,12 +113,11 @@ export default function page() {
                 withCredentials: true,
             }
         );
-        setProfileUrl(response.data.profile.profile_picture_url);
+
+        setProfileUrl(response.data.profile?.profile_picture_url);
         setProfileDetails(response.data.user);
-
-
-
     };
+
     return (
         <Layout>
             <div className="min-h-screen flex flex-col">
@@ -126,7 +125,7 @@ export default function page() {
                     <div className="flex flex-col items-center bg-white p-6 md:p-8 rounded-3xl shadow-md mb-8">
                         <div className="relative">
                             <img
-                                src={profileUrl}
+                                src={profileUrl ? profileUrl : '/noprofileimage/npc.png'}
                                 className="rounded-full shadow-gray-600 shadow-lg w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48"
                                 alt="Profile"
                             />
@@ -134,15 +133,14 @@ export default function page() {
                         <h2 className="text-2xl md:text-3xl font-bold text-gray-800 capitalize mt-4">
                             {profileDetails.username}
                         </h2>
-                        <Link href="/uploadprofilepicture" className="text-blue p-3"
-                        >
+                        <Link href="/uploadprofilepicture" className="text-blue p-3">
                             Choose another profile
                         </Link>
                     </div>
 
                     <div className="mt-8 space-y-2">
                         <div className="bg-white p-6 rounded-2xl shadow-md flex justify-between items-center mx-11 max-w-md">
-                            <label className="text-gray-800 text-lg font-semibold ">
+                            <label className="text-gray-800 text-lg font-semibold">
                                 Username
                             </label>
                             <>
@@ -159,50 +157,40 @@ export default function page() {
                         </div>
 
                         <div className="bg-white p-6 rounded-2xl shadow-md flex justify-between items-center mx-11 max-w-md">
-                           
                             <button
                                 className="ml-2 text-indigo-600 flex items-center"
                                 onClick={handleChangePassword}
                             >
-                            Change your password
+                                Change your password
                             </button>
                         </div>
-                        {/* <div className="mx-11 gap-3">
-                            <button
-                                className=" mt-5 text-white p-3 bg-indigo-600 rounded-lg shadow-md hover:bg-indigo-700 transition"
-                                onClick={handleEdit}
-                            >
-                                Update Profile Data
-                            </button>
-                        </div> */}
                     </div>
                 </div>
             </div>
+
             {editPasswordPopup && (
                 <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
                     <div className="bg-white p-8 rounded-2xl shadow-lg w-11/12 max-w-lg">
                         <h3 className="text-xl font-semibold mb-6 text-center">Edit Profile</h3>
-                        <form onSubmit={handleSubmitPassword} className="space-y-4">
-
+                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                             <div>
                                 <label className="block text-gray-800 text-lg font-semibold mb-2">Old Password</label>
                                 <input
-                                    name='oldpassword'
-                                    type='password'
-                                    onChange={(e) => setPasswordData({...passwordData,[e.target.name]:e.target.value})}
+                                    {...register("oldpassword")}
+                                    type="password"
                                     placeholder="Old Password"
                                     className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600"
-                                    required
                                 />
-                                 <label className="block text-gray-800 text-lg font-semibold mb-2">New Password</label>
+                                {errors.oldpassword && <span className='text-red-500'>{errors.oldpassword.message}</span>}
+
+                                <label className="block text-gray-800 text-lg font-semibold mb-2">New Password</label>
                                 <input
-                                    name='newpassword'
-                                    type='password'
-                                    onChange={(e) => setPasswordData({...passwordData,[e.target.name]:e.target.value})}
+                                    {...register("newpassword")}
+                                    type="password"
                                     placeholder="New Password"
                                     className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600"
-                                    required
                                 />
+                                {errors.newpassword && <span className='text-red-500'>{errors.newpassword.message}</span>}
                             </div>
                             <div className="flex justify-end space-x-4 mt-6">
                                 <button
@@ -222,7 +210,7 @@ export default function page() {
                             </div>
                         </form>
                     </div>
-                    <ToastContainer/>
+                    <ToastContainer />
                 </div>
             )}
 
@@ -230,15 +218,16 @@ export default function page() {
                 <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
                     <div className="bg-white p-8 rounded-2xl shadow-lg w-11/12 max-w-lg">
                         <h3 className="text-xl font-semibold mb-6 text-center">Edit Profile</h3>
-                        <form onSubmit={handleSubmitUsername} className="space-y-4">
+                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                             <div>
-                                <label className="block text-gray-800 text-lg font-semibold mb-2">Email</label>
+                                <label className="block text-gray-800 text-lg font-semibold mb-2">Username</label>
                                 <input
-                                    type='text'
-                                    onChange={(e) => setNewUserName(e.target.value)}
+                                    {...register("username")}
+                                    type="text"
                                     placeholder={profileDetails.username}
                                     className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600"
                                 />
+                                {errors.username && <span className='text-red-500'>{errors.username.message}</span>}
                             </div>
                             <div className="flex justify-end space-x-4 mt-6">
                                 <button
@@ -260,8 +249,6 @@ export default function page() {
                     </div>
                 </div>
             )}
-
         </Layout>
-
-    )
+    );
 }

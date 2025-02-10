@@ -1,6 +1,7 @@
 from rest_framework import serializers
-from .models import Room,Thread,Message
+from .models import Room,Thread,Message,ActiveThread
 from accounts.serializers import UserSerializer
+
 
 class RoomSerializer(serializers.ModelSerializer):
     users= UserSerializer(many=True,read_only=True)
@@ -33,4 +34,13 @@ class MessageSerializer(serializers.ModelSerializer):
             # Build the absolute URL using request.build_absolute_uri()
             return request.build_absolute_uri(obj.image.url)
         return None
+
+class ActiveThreadSerializer(serializers.ModelSerializer):
+    thread_id = serializers.IntegerField(source='thread.id')
+    thread_title = serializers.CharField(source='thread.title')
+    connected_at = serializers.DateTimeField()
+
+    class Meta:
+        model = ActiveThread
+        fields = ['thread_id', 'thread_title', 'connected_at']
 

@@ -1,9 +1,9 @@
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
-from .models import Room,Thread,Message
+from .models import Room,Thread,Message,ActiveThread
 from django.http import JsonResponse
-from .serializers import RoomSerializer,ThreadSerializer,MessageSerializer
+from .serializers import RoomSerializer,ThreadSerializer,MessageSerializer,ActiveThreadSerializer
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
 import json
@@ -112,7 +112,7 @@ def getMessages(request, threadid):
     return JsonResponse({"status": "successful", "message": serializer.data,"has_next": page_obj.has_next(),  })
 
 @api_view(['GET'])
-def getJoinedThreads(request):
+def getCreatedThreads(request):
     user= request.user
     threads= Thread.objects.filter(created_by=user)
     if threads:
@@ -120,6 +120,32 @@ def getJoinedThreads(request):
         return JsonResponse({"status":"sucessful", "data":serializer.data})
     else:
         return JsonResponse({"message":"No Threads","status":"error"})
+
+@api_view(['GET'])
+def getJoinedThreads(request):
+    user = request.user
+    if user.is_authenticated:
+        threads = ActiveThread.objects.filter(user=user).select_related('thread')
+        if threads:
+            serializer = ActiveThreadSerializer(threads, many=True)
+            return JsonResponse({"status":"successful","data":serializer.data})
+        else:
+            return JsonResponse({"message":"No Threads","status":"error"})
+    else:
+        return JsonResponse({'status':'error','message':'Failed to upload profilepicture'}, status=status.HTTP_400_BAD_REQUEST)
+    
+@api_view(['GET'])
+def getJoinedRooms(request):
+    user = request.user
+    if user.is_authenticated:
+        rooms = user.rooms.all()
+        if rooms:
+            serializer = RoomSerializer(rooms, many=True)
+            return JsonResponse({"status":"successful","data":serializer.data})
+        else:
+            return JsonResponse({"message":"No Rooms","status":"error"})
+    else:
+        return JsonResponse({'status':'error','message':'Failed to upload profilepicture'})
 
 
 @api_view(['GET'])
@@ -182,6 +208,18 @@ def handleDownVote(request, messageid):
     })
 
 @api_view(['POST'])
+def editthreads(request):
+    new_title = request.data['title']
+    thread_id = request.data['id']
+    thread = Thread.objects.get(id = thread_id)
+    serializer = ThreadSerializer(thread, data={'title': new_title}, partial=True)
+    if serializer.is_valid():
+        serializer.save()  
+        return JsonResponse({"status": "successful", "message": "Thread title updated successfully"})
+    else:
+        return JsonResponse({"status": "unsuccessful", "message": "Invalid data", "errors": serializer.errors})
+
+@api_view(['POST'])
 def getrelatedthreads(request, room_name):
     query= request.data.get("query")
     print(query)
@@ -196,6 +234,23 @@ def getrelatedthreads(request, room_name):
     matching_threads = search_threads_by_words(related_words, thread_data)
     print(matching_threads)
     return JsonResponse({'matching_threads': matching_threads})
+
+@api_view(['POST'])
+def getallthreads(request):
+    query= request.data.get("query")
+    print(query)
+    tokens=tokenizequery(query)
+    embeddings= loadembeddings(r"E:\questions\word_embeddings.csv")
+    related_words = set()
+    for token in tokens:
+        word,similarity=find_similar_words(token,embeddings)
+        related_words.update(word)
+    threads = Thread.objects.all().values('id','title','created_by__username','room__name','room')
+    thread_data = [{'title': thread['title'],'id':thread['id'],'created_by':thread["created_by__username"],'roomid':thread['room'],'roomname':thread['room__name']} for thread in threads]
+    matching_threads = search_threads_by_words(related_words, thread_data)
+    print("****************************************************************")
+    print( matching_threads)
+    return JsonResponse({'matching_threads': matching_threads, 'similarity':similarity})
 
 def loadembeddings(filepath):
    df= pd.read_csv(filepath)
@@ -218,13 +273,14 @@ def find_similar_words(word, embeddings, top_n=30):
         return []
 
     similar_words = []
+    similarity_scores = set()
     for vocab_word, vocab_vector in embeddings.items():
         similarity = cosine_similarity(word_vector, vocab_vector)
         similar_words.append((vocab_word, similarity))
 
     # Sort by similarity and return the top N similar words
     similar_words.sort(key=lambda x: x[1], reverse=True)
-    return [w for w, _ in similar_words[:top_n]]
+    return [w for w, _ in similar_words[:top_n]],similarity
 
 def search_threads_by_words(words, thread_data):
     # Find threads containing at least one of the related words
@@ -235,5 +291,4 @@ def search_threads_by_words(words, thread_data):
             if word in thread['title'].lower():
                 matching_threads.append(thread)
                 break  # No need to check more words for this thread
-
     return matching_threads

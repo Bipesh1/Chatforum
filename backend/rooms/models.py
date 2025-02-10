@@ -22,6 +22,14 @@ class Thread(models.Model):
 
     def __str__(self):
         return self.title
+    
+class ActiveThread(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='active_threads')
+    thread = models.ForeignKey('Thread', on_delete=models.CASCADE, related_name='active_users')
+    connected_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} active in {self.thread.title}"
 
 class Message(models.Model):
     room= models.ForeignKey(Room, related_name='messages',on_delete=models.CASCADE)

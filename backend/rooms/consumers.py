@@ -2,20 +2,24 @@ import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from asgiref.sync import sync_to_async
 from django.contrib.auth.models import User
-from .models import Room, Message, Thread
+from .models import Room, Message, Thread, ActiveThread
 from django.core.files.base import ContentFile
 import base64
 from django.conf import settings
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        self.room_name = self.scope['url_route']['kwargs']['thread_id']
-        self.room_group_name = f'chat_{self.room_name}'
-        print(f"Connecting to room: {self.room_group_name}") 
+        self.thread_id = self.scope['url_route']['kwargs']['thread_id']
+        self.room_name = f'chat_{self.thread_id}'
+        print(f"Connecting to room: {self.room_name}") 
+        self.user = self.scope['user']
+        if self.user.is_authenticated:
+            # Add user to active threads
+            await self.add_user_to_thread(self.user.id, self.thread_id)
 
         # Join the room group
         await self.channel_layer.group_add(
-            self.room_group_name,
+            self.room_name,
             self.channel_name
         )
 
@@ -24,7 +28,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def disconnect(self, close_code):
         # Leave the room group
         await self.channel_layer.group_discard(
-            self.room_group_name,
+            self.room_name,
             self.channel_name
         )
 
@@ -36,11 +40,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
             typing = text_data_json['typing']
             whoIsTyping = text_data_json['sender']
 
-            print(f"Typing notification: {whoIsTyping} is typing in {self.room_group_name}")  # Log the room group and user typing
+            # print(f"Typing notification: {whoIsTyping} is typing in {self.room_name}")  # Log the room group and user typing
 
             # Send typing notification to the room
             await self.channel_layer.group_send(
-                self.room_group_name,
+                self.room_name,
                 {
                     'type': 'typing_notification',
                     'message': f"{whoIsTyping} is typing..." if typing else "none",
@@ -64,7 +68,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 
                 # Broadcast the message to the room
                 await self.channel_layer.group_send(
-                    self.room_group_name,
+                    self.room_name,
                     {
                         'type': 'chat_message',
                         'message_id':message_id,
@@ -85,7 +89,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
                 # Broadcast only the updated message
                 await self.channel_layer.group_send(
-                    self.room_group_name,
+                    self.room_name,
                     {
                         'type': 'updated_message',  
                         'content': updated_content,
@@ -104,7 +108,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     image_urls.append(image_url)
                 # Broadcast image(s) to the room
                 await self.channel_layer.group_send(
-                    self.room_group_name,
+                    self.room_name,
                     {
                         'type': 'chat_message',
                         'message_id':message_id,
@@ -116,6 +120,21 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
             # Handle text and image messages together
             
+    @sync_to_async
+    def add_user_to_thread(self, user_id, thread_id):
+        user = User.objects.get(id=user_id)
+        thread = Thread.objects.get(id=thread_id)
+        ActiveThread.objects.get_or_create(user=user, thread=thread)
+    
+
+# For now no need to add removing user from thread.
+    # @sync_to_async
+    # def remove_user_from_thread(user_id, thread_id):
+    #     user = User.objects.get(id=user_id)
+    #     thread = Thread.objects.get(id=thread_id)
+    #     ActiveThread.objects.filter(user=user, thread=thread).delete()
+    #     print(f"{user} removed from thread {thread} ")
+
 
     async def chat_message(self, event):
         sender = event['sender']
@@ -166,7 +185,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     def save_message(self, sender, message, roomname):
         user = User.objects.get(username=sender)
         room = Room.objects.get(name=roomname)
-        thread = Thread.objects.get(id=self.room_name)
+        thread = Thread.objects.get(id=self.thread_id)
         message_obj=Message.objects.create(room=room, user=user, thread=thread, content=message)
         return message_obj.id,message_obj.date_added
     @sync_to_async
@@ -179,7 +198,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # Save the image to the database
         user = User.objects.get(username=sender)
         room = Room.objects.get(name=roomname)
-        thread = Thread.objects.get(id=self.room_name)
+        thread = Thread.objects.get(id=self.thread_id)
         
         # Create the message and save the image
         message_obj = Message.objects.create(room=room, user=user, thread=thread, image=img_data)

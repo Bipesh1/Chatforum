@@ -122,19 +122,14 @@ export default function UserDashboard() {
                 <p className="text-gray-500">
                   Welcome back! Here’s your activity overview.
                 </p>
-                <button className="px-4 py-2 my-2 text-white rounded-lg shadow-md bg-gray-600  hover:bg-gray-700 transition">
+                <button className="px-4 py-2 my-2 text-white rounded-lg shadow-md bg-blue-500  hover:bg-blue-700 transition">
                   <Link href="/userprofile">
                     Edit Profile
                   </Link>
                 </button>
               </div>
             </div>
-            <div className="mt-4 md:mt-0">
-              <button className="px-4 py-2 md:px-6 md:py-2 bg-gray-600 text-white rounded-lg shadow-md hover:bg-gray-700 transition flex items-center justify-between">
-                <IoIosNotifications className="text-xl" /> View Latest
-                Notifications
-              </button>
-            </div>
+            
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             <div className="bg-gradient-to-r from-purple-500 to-indigo-500 p-6 rounded-2xl shadow-lg text-center text-white">

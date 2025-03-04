@@ -315,6 +315,10 @@ export default function ChatRoom({ params }) {
 
   }
   const handleSaveEdit = (messageID) => {
+    if(editedContent.length==0){
+      alert("Message Cannot be empty")
+      return
+    }
     if (
       socketRef.current &&
       socketRef.current.readyState === WebSocket.OPEN
@@ -325,7 +329,6 @@ export default function ChatRoom({ params }) {
     }
     setEditingMessageId(null);
     setEditedContent('');
-    getMessages();
   }
 
   const formatDate = (dateAdded) => {
@@ -376,10 +379,7 @@ export default function ChatRoom({ params }) {
           <Link href={`/rooms/${roomname}`} className="text-gray-600 hover:text-gray-700 font-semibold border border-gray-600 px-4 py-2 rounded">
             Back to Threadroom
           </Link>
-          {/* Leave Chat */}
-          <button className="text-red-600 hover:text-red-700 font-semibold border border-red-600 px-4 py-2 rounded">
-            Leave Chat
-          </button>
+          
         </div>
       </div>
 
@@ -396,20 +396,25 @@ export default function ChatRoom({ params }) {
             {message.content && (
               <div className="flex items-center space-x-4">
                 {/* Upvote Section */}
+                    {!message.isUser&&(
                 <div className="flex flex-col items-center space-y-2 bg-gray-50 py-1 px-1 rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
-                  <div className="flex flex-col justify-center items-center">
+                      
+                      <div className="flex flex-col justify-center items-center">
                     {message.upvote}
-                    <CiSquareChevUp
+                      
+                      <CiSquareChevUp
                       className="text-2xl text-gray-700 hover:text-blue-600 cursor-pointer transition-transform transform hover:scale-110"
                       onClick={() => handleUpvote(message.id)}
-                    />
+                      />
                     <CiSquareChevDown
-                      className="text-2xl text-gray-700 hover:text-blue-600 cursor-pointer transition-transform transform hover:scale-110"
-                      onClick={() => handleDownvote(message.id)}
+                    className="text-2xl text-gray-700 hover:text-blue-600 cursor-pointer transition-transform transform hover:scale-110"
+                    onClick={() => handleDownvote(message.id)}
                     />
                     {message.downvote}
                   </div>
                 </div>
+                  )
+                  }
 
                 {/* Conditional Rendering: Either message content or the edit input */}
                 {editingMessageId === message.id ? (
@@ -438,7 +443,7 @@ export default function ChatRoom({ params }) {
                 ) : (
                   // When not in edit mode, show the message content
                   <div
-                    className={`p-6 rounded-lg max-w-2xl break-words shadow-xl transition-transform duration-300 ${message.isUser ? "bg-gray-800 text-white" : "bg-gray-100 text-gray-800"
+                    className={`p-6 rounded-lg max-w-2xl break-words shadow-xl transition-transform duration-300 ${message.isUser ? "bg-blue-800 text-white" : "bg-gray-100 text-gray-800"
                       }`}
                   >
                     <p className="font-semibold text-sm ">{message.sender ? message.sender : message.user.username}</p>

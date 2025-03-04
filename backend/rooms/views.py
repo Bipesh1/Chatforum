@@ -55,12 +55,14 @@ def joinroom(request,room_name):
 @api_view(['POST'])
 def addthreads(request,room_name):
     if request.method== "POST":
-
         room =Room.objects.get(name=room_name)
         user= request.user
-        print(user)
         title= request.data["title"]
+        checkthread = Thread.objects.filter(room=room,title__iexact=title)
         if room and user and title:  
+            if checkthread.exists():
+                existingthread = ThreadSerializer(checkthread,many=True)
+                return JsonResponse({"status":"Unsuccessful","message":"Thread exists","data":existingthread.data})
             Thread.objects.create(room=room, title=title, created_by=user)
             return JsonResponse({"status":"successful","message":"Updated Sucessfully"})
         return JsonResponse({"status":"error","message":"Invalid Data"})
